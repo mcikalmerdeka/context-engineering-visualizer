@@ -187,7 +187,7 @@ class ContextVisualizerUI:
                 - **Consistency**: Stable system instructions across interactions
                 """)
             
-            with gr.Sidebar(label="Settings & Examples", open=True, width=320):
+            with gr.Accordion("Settings & Examples", open=False):
                 gr.Markdown("### Settings")
                 
                 show_viz = gr.Checkbox(
