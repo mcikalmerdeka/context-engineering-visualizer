@@ -131,10 +131,11 @@ This visualizer demonstrates all four principles in action:
 
 - **Interactive Chat Interface**: Clean, modern chatbot UI with conversation history
 - **Visual Context Breakdown**: Custom stacked container visualization showing proportional token distribution
-- **RAG Integration**: Demonstrates retrieval-augmented generation with a knowledge base
+- **Advanced RAG Integration**: FAISS vector store with PDF document processing and optimized chunking strategy
 - **Conversation Memory**: Smart truncation of conversation history
-- **Tool Usage**: Shows how agents use external tools for calculations
+- **Specialized Tool System**: Metric calculation tools that defer to centralized computation logic
 - **Real-time Token Tracking**: See exactly how tokens are distributed across context layers
+- **Metadata Display**: Retrieved chunks include source page information for traceability
 - **Collapsible Sidebar**: Settings and example questions in an easy-to-access sidebar
 
 ## Project Structure
@@ -143,16 +144,20 @@ This visualizer demonstrates all four principles in action:
 context-engineering-visualizer/
 ├── app/
 │   ├── __init__.py
-│   ├── agent.py          # Main agent implementation
-│   ├── visualizer.py     # Context visualization logic
-│   ├── memory.py         # Conversation memory management
-│   ├── knowledge.py      # RAG knowledge base
-│   ├── tools.py          # Agent tools
-│   └── ui.py             # Gradio interface
+│   ├── agent.py               # Main agent implementation
+│   ├── visualizer.py          # Context visualization logic
+│   ├── memory.py              # Conversation memory management
+│   ├── knowledge.py           # RAG knowledge base with FAISS
+│   ├── tools.py               # Agent tools (metric calculations)
+│   ├── ui.py                  # Gradio interface
+│   └── process_knowledge.py   # Script to create FAISS index
 ├── config/
 │   ├── __init__.py
-│   └── settings.py       # Application configuration
-├── main.py               # Entry point
+│   └── settings.py            # Application configuration
+├── data/
+│   └── Product Strategy & Decision Handbook — Atlas Pay.pdf
+├── faiss_index_store/         # Generated FAISS vector store (gitignored)
+├── main.py                    # Entry point
 ├── pyproject.toml
 └── README.md
 ```
@@ -177,6 +182,19 @@ uv sync
 ```
 OPENAI_API_KEY=your_api_key_here
 ```
+
+4. Process the PDF and create the FAISS index:
+
+```bash
+python app/process_knowledge.py
+```
+
+This will:
+- Load the Product Strategy PDF document
+- Split it into optimized chunks (800 chars with 150 char overlap)
+- Create embeddings using OpenAI `text-embedding-3-small`
+- Save the FAISS index to `faiss_index_store/`
+- Display all chunks with metadata and statistics
 
 ## Usage
 
@@ -224,37 +242,57 @@ The model receives exactly what it needs, no more, no less.
 
 ### Scenario Examples
 
-The interface includes four sequential scenarios in the sidebar to help you understand context engineering:
+The interface includes five sequential scenarios in the sidebar demonstrating an **internal company knowledge assistant** for AtlasPay:
 
-**Scenario 1: Understanding AOV (Average Order Value)**
+**Scenario 1: Understanding STAM (North Star Metric)**
 
-1. What is Average Order Value and how is it calculated?
-2. Calculate the AOV if total revenue is $50000 and we had 500 orders
-3. What if we had 700 orders with the same revenue instead?
+1. What is STAM and why is it our North Star metric?
+2. Calculate STAM if we have 125,000 successful transactions and 500 active merchants
+3. What does this STAM value tell us about merchant engagement?
 
-**Scenario 2: Conversion Rate Analysis**
+**Scenario 2: Net Revenue Retention Analysis**
 
-1. What is Conversion Rate?
-2. Calculate conversion rate with 250 conversions and 10000 visitors
-3. How would the rate change if we got 400 conversions?
+1. What is Net Revenue Retention (NRR) and why is it important?
+2. Calculate NRR if we have $2.5M retained revenue from $2M starting revenue
+3. Is this NRR performance good based on our product goals?
 
-**Scenario 3: Understanding Revenue Metrics**
+**Scenario 3: Payment Success Rate Monitoring**
 
-1. What is the difference between gross and net revenue?
-2. If gross revenue is $100000 with $15000 in refunds and $5000 in discounts, what's the net revenue?
+1. What is Adjusted Payment Success Rate and how is it used?
+2. Calculate the payment success rate with 48,500 successful payments out of 50,000 valid attempts
+3. Does this meet our platform reliability standards?
 
-**Scenario 4: Churn Rate**
+**Scenario 4: Product Strategy & Decision Making**
 
-1. Explain what Churn Rate means
-2. Calculate churn rate if we lost 50 customers out of 1000 total customers
+1. What are AtlasPay's core product principles?
+2. Why did we decide to build our fraud detection in-house instead of buying a vendor solution?
+3. What were the trade-offs in that decision?
+
+**Scenario 5: Feature Prioritization**
+
+1. How does AtlasPay prioritize features?
+2. What are our strategic goals for 2025-2027?
+3. Should we prioritize a feature with Customer Impact=5, Revenue Impact=4, Strategic Alignment=5, Engineering Effort=3?
 
 These scenarios demonstrate:
 
-- **RAG retrieval**: Fetching relevant knowledge
-- **Tool usage**: Calling calculation functions
+- **Advanced RAG retrieval**: Semantic search over product strategy documentation
+- **Specialized tool usage**: Metric calculations using centralized computation logic
 - **Context awareness**: Using conversation history for follow-up questions
+- **Source traceability**: Retrieved chunks include page metadata
 
-The third question in each scenario showcases context engineering - the agent understands follow-ups because we engineered the context to include relevant history.
+### Key Insight: Document Structure vs. Computation Logic
+
+The Product Strategy Handbook **intentionally omits calculation formulas** for metrics like STAM, NRR, and Payment Success Rate. Instead, it references the "official metrics service" or "centralized metrics system."
+
+This design pattern demonstrates:
+
+1. **Separation of concerns**: Documentation describes *what* and *why*, not *how*
+2. **Single source of truth**: Formulas live in one place (the tool), preventing drift
+3. **Tool dependency**: The agent must call `calculate_metric` tool for computations
+4. **Real-world modeling**: Mirrors how actual organizations structure their knowledge
+
+The third question in each scenario showcases context engineering - the agent understands follow-ups because we engineered the context to include relevant history and retrieved documentation.
 
 ## Using the Interface
 
@@ -350,19 +388,53 @@ Current Question:
 
 ```python
 class KnowledgeBase:
-    def __init__(self):
-        # 8 documents total, but only retrieve top 2
-        self.documents = [
-            "AOV = total revenue / number of orders",
-            "Net Revenue = gross revenue - refunds - discounts",
-            # ... more documents
-        ]
+    def __init__(self, pdf_path: str, index_path: str, embedding_model: str, top_k: int = 3):
+        self.embeddings = OpenAIEmbeddings(model=embedding_model)
+        self.vectorstore = self._load_or_create_index(recreate=False)
+        self.top_k = top_k
     
-        # Retriever with k=2 (only top 2 docs)
-        self.retriever = self.vectorstore.as_retriever(search_kwargs={"k": 2})
+    def _load_or_create_index(self, recreate: bool = False) -> FAISS:
+        # Load existing index or create from PDF
+        if not recreate and os.path.exists(self.index_path):
+            return FAISS.load_local(self.index_path, self.embeddings)
+        
+        # Load PDF and split into chunks
+        loader = PyPDFLoader(self.pdf_path)
+        documents = loader.load()
+        
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=800,      # Optimized for structured content
+            chunk_overlap=150,   # Balance between context and redundancy
+            separators=["\n\n", "\n", ". ", ", ", " ", ""]
+        )
+        chunks = text_splitter.split_documents(documents)
+        
+        # Create and save FAISS index
+        vectorstore = FAISS.from_documents(chunks, self.embeddings)
+        vectorstore.save_local(self.index_path)
+        return vectorstore
+    
+    def retrieve_relevant(self, query: str, k: int = None) -> str:
+        """Retrieve top-k relevant chunks with metadata"""
+        docs = self.vectorstore.similarity_search(query, k=k or self.top_k)
+        
+        formatted_chunks = []
+        for i, doc in enumerate(docs, 1):
+            chunk_text = f"--- Chunk {i} ---\nMetadata: {doc.metadata}\n\n{doc.page_content}"
+            formatted_chunks.append(chunk_text)
+        
+        return "\n\n".join(formatted_chunks)
 ```
 
-We have 8 documents, but only send the **top 2 most relevant** to the model. This is context engineering in action.
+**Key RAG optimizations:**
+
+1. **Persistent index**: FAISS index saved to disk, loaded on startup (no re-embedding)
+2. **Smart chunking**: 800 char chunks with 150 overlap balances granularity and context
+3. **Separator hierarchy**: Respects paragraph > sentence > clause boundaries
+4. **Top-k retrieval**: Only 3 most relevant chunks (not entire document)
+5. **Metadata tracking**: Each chunk includes source page for traceability
+
+We process a 10+ page PDF into ~50 chunks, but only send the **top 3 most relevant** to the model. This is context engineering in action.
 
 ### The Memory Component (Smart Truncation)
 
@@ -386,6 +458,56 @@ We limit history to 4 messages. For longer conversations, this prevents context 
 - **Deletion**: Permanently remove certain states
 - More info: [LangChain Memory Documentation](https://docs.langchain.com/oss/python/concepts/memory)
 
+### The Tool System (Specialized Computation)
+
+```python
+@tool
+def calculate_metric(metric_name: str, values: str) -> str:
+    """
+    Compute an official business metric using centralized metrics logic.
+    
+    This tool represents the company's authoritative metrics service.
+    Product strategy documents intentionally omit calculation formulas
+    and defer all computations to this tool to ensure consistency.
+    
+    Supported metrics:
+    - "stam": Successful Transactions per Active Merchant
+    - "nrr": Net Revenue Retention
+    - "payment_success_rate": Adjusted Payment Success Rate
+    
+    Args:
+        metric_name: Name of the metric to compute
+        values: Comma-separated numeric inputs (e.g., "125000, 500")
+    
+    Returns:
+        Human-readable string with computed metric
+    """
+    nums = [float(x.strip()) for x in values.split(",")]
+    
+    if metric_name.lower() == "stam":
+        result = nums[0] / nums[1]  # transactions / merchants
+        return f"STAM: {result:.2f} successful transactions per merchant"
+    
+    elif metric_name.lower() == "nrr":
+        result = (nums[0] / nums[1]) * 100  # retained / starting
+        return f"Net Revenue Retention (NRR): {result:.2f}%"
+    
+    # ... other metrics
+```
+
+**Design pattern:**
+
+- **Documentation separation**: PDF describes metrics conceptually, not computationally
+- **Single source of truth**: Formulas exist only in the tool
+- **Forced tool usage**: Agent cannot compute metrics from context alone
+- **Real-world modeling**: Mimics actual enterprise metric systems
+
+This ensures:
+1. **Consistency**: All metric calculations use same logic
+2. **Maintainability**: Formula changes update in one place
+3. **Auditability**: Tool calls are traceable
+4. **No hallucination**: Agent can't make up formulas
+
 ## Configuration
 
 Edit `config/settings.py` to customize:
@@ -395,15 +517,21 @@ class Settings:
     # Model settings
     MODEL_NAME = "gpt-4.1-mini"
     TEMPERATURE = 0
+    EMBEDDING_MODEL = "text-embedding-3-small"
   
     # Memory settings
     MAX_CONVERSATION_MESSAGES = 4
   
     # RAG settings
-    RAG_TOP_K = 2
+    RAG_TOP_K = 3
+    FAISS_INDEX_PATH = "faiss_index_store"
+    PDF_PATH = "data/Product Strategy & Decision Handbook — Atlas Pay.pdf"
   
     # UI settings
     GRADIO_SERVER_PORT = 7860
+    
+    # System prompt
+    SYSTEM_PROMPT = """You are an internal company knowledge assistant for AtlasPay..."""
 ```
 
 ## How to Practice Context Engineering
@@ -467,9 +595,10 @@ As AI systems mature, **context design is becoming the main differentiator**:
 
 ## Technologies
 
-- **LangChain**: Agent framework and tools
-- **OpenAI**: Language model (GPT-4.1-mini)
-- **FAISS**: Vector store for RAG
+- **LangChain**: Agent framework, tools, and document processing
+- **OpenAI**: Language model (GPT-4.1-mini) and embeddings (text-embedding-3-small)
+- **FAISS**: Vector store for semantic search and RAG
+- **PyPDF**: PDF document loading and parsing
 - **Gradio**: Web interface
 - **Python 3.11+**
 

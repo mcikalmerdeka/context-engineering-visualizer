@@ -200,23 +200,30 @@ class ContextVisualizerUI:
                 gr.Markdown("""
                 **Try these sequential scenarios to see context engineering in action:**
                 
-                **Scenario 1: Understanding AOV (Average Order Value)**
-                1. What is Average Order Value and how is it calculated?
-                2. Calculate the AOV if total revenue is $50000 and we had 500 orders
-                3. What if we had 700 orders with the same revenue instead?
+                **Scenario 1: Understanding STAM (North Star Metric)**
+                1. What is STAM and why is it our North Star metric?
+                2. Calculate STAM if we have 125,000 successful transactions and 500 active merchants
+                3. What does this STAM value tell us about merchant engagement?
                 
-                **Scenario 2: Conversion Rate Analysis**
-                1. What is Conversion Rate?
-                2. Calculate conversion rate with 250 conversions and 10000 visitors
-                3. How would the rate change if we got 400 conversions?
+                **Scenario 2: Net Revenue Retention Analysis**
+                1. What is Net Revenue Retention (NRR) and why is it important?
+                2. Calculate NRR if we have $2.5M retained revenue from $2M starting revenue
+                3. Is this NRR performance good based on our product goals?
                 
-                **Scenario 3: Understanding Revenue Metrics**
-                1. What is the difference between gross and net revenue?
-                2. If gross revenue is $100000 with $15000 in refunds and $5000 in discounts, what's the net revenue?
+                **Scenario 3: Payment Success Rate Monitoring**
+                1. What is Adjusted Payment Success Rate and how is it used?
+                2. Calculate the payment success rate with 48,500 successful payments out of 50,000 valid attempts
+                3. Does this meet our platform reliability standards?
                 
-                **Scenario 4: Churn Rate**
-                1. Explain what Churn Rate means
-                2. Calculate churn rate if we lost 50 customers out of 1000 total customers
+                **Scenario 4: Product Strategy & Decision Making**
+                1. What are AtlasPay's core product principles?
+                2. Why did we decide to build our fraud detection in-house instead of buying a vendor solution?
+                3. What were the trade-offs in that decision?
+                
+                **Scenario 5: Feature Prioritization**
+                1. How does AtlasPay prioritize features?
+                2. What are our strategic goals for 2025-2027?
+                3. Should we prioritize a feature with Customer Impact=5, Revenue Impact=4, Strategic Alignment=5, Engineering Effort=3?
                 """)
             
             chatbot = gr.Chatbot(

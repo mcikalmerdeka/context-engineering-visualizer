@@ -26,7 +26,13 @@ class ContextEngineeringAgent:
             temperature=Settings.TEMPERATURE
         )
         
-        self.knowledge_base = KnowledgeBase(top_k=Settings.RAG_TOP_K)
+        self.knowledge_base = KnowledgeBase(
+            pdf_path=Settings.PDF_PATH,
+            index_path=Settings.FAISS_INDEX_PATH,
+            embedding_model=Settings.EMBEDDING_MODEL,
+            top_k=Settings.RAG_TOP_K,
+            recreate_index=False  # Load existing index by default
+        )
         self.memory = ConversationMemory(max_messages=Settings.MAX_CONVERSATION_MESSAGES)
         self.visualizer = ContextVisualizer()
         
