@@ -2,7 +2,7 @@
 title: Context Engineering Visualizer
 emoji: 🧠
 colorFrom: blue
-colorTo: purple
+colorTo: green
 sdk: gradio
 sdk_version: 6.3.0
 app_file: main.py
@@ -21,9 +21,11 @@ tags:
 
 A professional educational tool that demonstrates how information flows into an AI agent's context window before inference. Built with LangChain and Gradio.
 
-> **Context engineering is the practice of deliberately deciding what information an AI model sees, when it sees it, and in what format.**
+Application deployed on Hugging Face: [Context Engineering Visualizer](https://huggingface.co/spaces/mcikalmerdeka/context-engineering-visualizer)
 
 ## What Is Context Engineering?
+
+> **Context engineering is the practice of deliberately deciding what information an AI model sees, when it sees it, and in what format.**
 
 Most developers only focus on prompt engineering (optimizing the wording of queries). But the real power comes from **context engineering**: designing the entire information flow into your model.
 
