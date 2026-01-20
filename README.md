@@ -8,7 +8,7 @@ sdk_version: 5.9.1
 app_file: main.py
 pinned: false
 license: mit
-short_description: Visualize how information flows into AI agent context windows
+short_description: Visualize AI agent context window information flow
 tags:
   - langchain
   - context-engineering
