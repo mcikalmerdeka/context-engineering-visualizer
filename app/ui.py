@@ -223,8 +223,7 @@ class ContextVisualizerUI:
             chatbot = gr.Chatbot(
                 label="Conversation",
                 height=500,
-                avatar_images=(None, None),
-                type='messages'
+                avatar_images=(None, None)
             )
             
             query_input = gr.Textbox(
