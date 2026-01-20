@@ -11,3 +11,6 @@ wheels/
 
 # Secrets
 .env
+
+# FAISS vector store
+# faiss_index_store/

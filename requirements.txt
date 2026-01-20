@@ -5,3 +5,4 @@ langchain-community>=0.4.1
 langchain-openai>=1.1.7
 python-dotenv>=1.2.1
 tiktoken>=0.12.0
+pypdf>=6.6.0
