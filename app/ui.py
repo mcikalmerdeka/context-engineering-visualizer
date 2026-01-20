@@ -158,7 +158,8 @@ class ContextVisualizerUI:
         """Create the Gradio interface"""
         
         with gr.Blocks(
-            title="Context Engineering Visualizer"
+            title="Context Engineering Visualizer",
+            theme=gr.themes.Soft()
         ) as interface:
             
             gr.Markdown("""
@@ -222,7 +223,8 @@ class ContextVisualizerUI:
             chatbot = gr.Chatbot(
                 label="Conversation",
                 height=500,
-                avatar_images=(None, None)
+                avatar_images=(None, None),
+                type='messages'
             )
             
             query_input = gr.Textbox(
@@ -284,6 +286,5 @@ def launch_ui(
     interface.launch(
         share=share,
         server_name=server_name,
-        server_port=server_port,
-        theme=gr.themes.Soft()
+        server_port=server_port
     )
