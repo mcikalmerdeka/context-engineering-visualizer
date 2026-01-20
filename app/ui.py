@@ -196,6 +196,14 @@ class ContextVisualizerUI:
                     info="Display detailed breakdown of context layers"
                 )
                 
+                gr.Markdown("""
+                ### Knowledge Base Context
+                
+                The examples below use a synthetic data of a company internal document: **Product Strategy & Decision Handbook** from Atlas Pay. 
+                
+                📄 [View the source document on Hugging Face](https://huggingface.co/spaces/mcikalmerdeka/context-engineering-visualizer/blob/main/data/Product%20Strategy%20%26%20Decision%20Handbook%20%E2%80%94%20Atlas%20Pay.pdf)
+                """)
+                
                 gr.Markdown("### Example Questions")
                 gr.Markdown("""
                 **Try these sequential scenarios to see context engineering in action:**
