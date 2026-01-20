@@ -1,0 +1,7 @@
+faiss-cpu>=1.13.2
+gradio>=6.3.0
+langchain>=1.2.6
+langchain-community>=0.4.1
+langchain-openai>=1.1.7
+python-dotenv>=1.2.1
+tiktoken>=0.12.0
