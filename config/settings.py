@@ -22,7 +22,7 @@ class Settings:
     
     # UI Settings
     GRADIO_SHARE = False
-    GRADIO_SERVER_NAME = "127.0.0.1"
+    GRADIO_SERVER_NAME = "0.0.0.0"
     GRADIO_SERVER_PORT = 7860
     
     # System Prompt
