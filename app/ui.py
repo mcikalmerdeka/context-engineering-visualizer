@@ -188,7 +188,7 @@ class ContextVisualizerUI:
                 - **Consistency**: Stable system instructions across interactions
                 """)
             
-            with gr.Accordion("Settings & Examples", open=False):
+            with gr.Sidebar(label="Settings & Examples", open=True, width=320):
                 gr.Markdown("### Settings")
                 
                 show_viz = gr.Checkbox(
@@ -223,7 +223,8 @@ class ContextVisualizerUI:
             chatbot = gr.Chatbot(
                 label="Conversation",
                 height=500,
-                avatar_images=(None, None)
+                avatar_images=(None, None),
+                type='messages'
             )
             
             query_input = gr.Textbox(
