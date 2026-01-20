@@ -1,3 +1,22 @@
+---
+title: Context Engineering Visualizer
+emoji: 🧠
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+sdk_version: 5.9.1
+app_file: main.py
+pinned: false
+license: mit
+short_description: Visualize how information flows into AI agent context windows
+tags:
+  - langchain
+  - context-engineering
+  - rag
+  - educational
+  - visualization
+---
+
 # Context Engineering Visualizer
 
 A professional educational tool that demonstrates how information flows into an AI agent's context window before inference. Built with LangChain and Gradio.
