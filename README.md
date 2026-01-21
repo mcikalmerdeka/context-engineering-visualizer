@@ -16,8 +16,9 @@ tags:
   - educational
   - visualization
 ---
-
 # Context Engineering Visualizer
+
+[![](assets/project_header.png)](https://huggingface.co/spaces/mcikalmerdeka/context-engineering-visualizer)
 
 A professional educational tool that demonstrates how information flows into an AI agent's context window before inference. Built with LangChain and Gradio.
 
@@ -190,6 +191,7 @@ python app/process_knowledge.py
 ```
 
 This will:
+
 - Load the Product Strategy PDF document
 - Split it into optimized chunks (800 chars with 150 char overlap)
 - Create embeddings using OpenAI `text-embedding-3-small`
@@ -364,13 +366,13 @@ class ContextEngineeringAgent:
         # Layer 1: System instructions (stable)
         # Layer 2: Conversation history (recent only)
         history_text = self.memory.get_history_text()
-    
+  
         # Layer 3: Retrieved knowledge (top-2 relevant)
         retrieved_docs = self.knowledge_base.retrieve_relevant(user_query)
-    
+  
         # Layer 4: User query
         # Layer 5: Tools (automatically handled by agent)
-    
+  
         # Assemble with clear structure
         context_message = f"""Context from Knowledge Base:
 {retrieved_docs}
@@ -380,7 +382,7 @@ Previous Conversation:
 
 Current Question:
 {user_query}"""
-    
+  
         return self.agent.invoke({"messages": [{"role": "user", "content": context_message}]})
 ```
 
@@ -392,37 +394,37 @@ class KnowledgeBase:
         self.embeddings = OpenAIEmbeddings(model=embedding_model)
         self.vectorstore = self._load_or_create_index(recreate=False)
         self.top_k = top_k
-    
+  
     def _load_or_create_index(self, recreate: bool = False) -> FAISS:
         # Load existing index or create from PDF
         if not recreate and os.path.exists(self.index_path):
             return FAISS.load_local(self.index_path, self.embeddings)
-        
+      
         # Load PDF and split into chunks
         loader = PyPDFLoader(self.pdf_path)
         documents = loader.load()
-        
+      
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=800,      # Optimized for structured content
             chunk_overlap=150,   # Balance between context and redundancy
             separators=["\n\n", "\n", ". ", ", ", " ", ""]
         )
         chunks = text_splitter.split_documents(documents)
-        
+      
         # Create and save FAISS index
         vectorstore = FAISS.from_documents(chunks, self.embeddings)
         vectorstore.save_local(self.index_path)
         return vectorstore
-    
+  
     def retrieve_relevant(self, query: str, k: int = None) -> str:
         """Retrieve top-k relevant chunks with metadata"""
         docs = self.vectorstore.similarity_search(query, k=k or self.top_k)
-        
+      
         formatted_chunks = []
         for i, doc in enumerate(docs, 1):
             chunk_text = f"--- Chunk {i} ---\nMetadata: {doc.metadata}\n\n{doc.page_content}"
             formatted_chunks.append(chunk_text)
-        
+      
         return "\n\n".join(formatted_chunks)
 ```
 
@@ -465,33 +467,33 @@ We limit history to 4 messages. For longer conversations, this prevents context 
 def calculate_metric(metric_name: str, values: str) -> str:
     """
     Compute an official business metric using centralized metrics logic.
-    
+  
     This tool represents the company's authoritative metrics service.
     Product strategy documents intentionally omit calculation formulas
     and defer all computations to this tool to ensure consistency.
-    
+  
     Supported metrics:
     - "stam": Successful Transactions per Active Merchant
     - "nrr": Net Revenue Retention
     - "payment_success_rate": Adjusted Payment Success Rate
-    
+  
     Args:
         metric_name: Name of the metric to compute
         values: Comma-separated numeric inputs (e.g., "125000, 500")
-    
+  
     Returns:
         Human-readable string with computed metric
     """
     nums = [float(x.strip()) for x in values.split(",")]
-    
+  
     if metric_name.lower() == "stam":
         result = nums[0] / nums[1]  # transactions / merchants
         return f"STAM: {result:.2f} successful transactions per merchant"
-    
+  
     elif metric_name.lower() == "nrr":
         result = (nums[0] / nums[1]) * 100  # retained / starting
         return f"Net Revenue Retention (NRR): {result:.2f}%"
-    
+  
     # ... other metrics
 ```
 
@@ -503,6 +505,7 @@ def calculate_metric(metric_name: str, values: str) -> str:
 - **Real-world modeling**: Mimics actual enterprise metric systems
 
 This ensures:
+
 1. **Consistency**: All metric calculations use same logic
 2. **Maintainability**: Formula changes update in one place
 3. **Auditability**: Tool calls are traceable
@@ -529,7 +532,7 @@ class Settings:
   
     # UI settings
     GRADIO_SERVER_PORT = 7860
-    
+  
     # System prompt
     SYSTEM_PROMPT = """You are an internal company knowledge assistant for AtlasPay..."""
 ```
