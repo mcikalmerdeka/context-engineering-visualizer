@@ -2,9 +2,9 @@
 title: Context Engineering Visualizer
 emoji: 🧠
 colorFrom: blue
-colorTo: green
+colorTo: yellow
 sdk: gradio
-sdk_version: 6.3.0
+sdk_version: 6.5.1
 app_file: main.py
 pinned: false
 license: mit
@@ -399,18 +399,18 @@ class KnowledgeBase:
         # Load existing index or create from PDF
         if not recreate and os.path.exists(self.index_path):
             return FAISS.load_local(self.index_path, self.embeddings)
-      
+    
         # Load PDF and split into chunks
         loader = PyPDFLoader(self.pdf_path)
         documents = loader.load()
-      
+    
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=800,      # Optimized for structured content
             chunk_overlap=150,   # Balance between context and redundancy
             separators=["\n\n", "\n", ". ", ", ", " ", ""]
         )
         chunks = text_splitter.split_documents(documents)
-      
+    
         # Create and save FAISS index
         vectorstore = FAISS.from_documents(chunks, self.embeddings)
         vectorstore.save_local(self.index_path)
@@ -419,12 +419,12 @@ class KnowledgeBase:
     def retrieve_relevant(self, query: str, k: int = None) -> str:
         """Retrieve top-k relevant chunks with metadata"""
         docs = self.vectorstore.similarity_search(query, k=k or self.top_k)
-      
+    
         formatted_chunks = []
         for i, doc in enumerate(docs, 1):
             chunk_text = f"--- Chunk {i} ---\nMetadata: {doc.metadata}\n\n{doc.page_content}"
             formatted_chunks.append(chunk_text)
-      
+    
         return "\n\n".join(formatted_chunks)
 ```
 
