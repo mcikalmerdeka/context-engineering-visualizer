@@ -12,5 +12,9 @@ wheels/
 # Secrets
 .env
 
+# Log files
+logs/
+*.log
+
 # Reference files
 references/

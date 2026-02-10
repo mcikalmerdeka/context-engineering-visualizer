@@ -22,8 +22,8 @@ class Settings:
     RAG_TOP_K = 3
     
     # Vector Store Configuration
-    FAISS_INDEX_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "faiss_index_store")
-    PDF_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "Product Strategy & Decision Handbook — Atlas Pay.pdf")
+    FAISS_INDEX_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "faiss_index_store")
+    PDF_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "Product Strategy & Decision Handbook — Atlas Pay.pdf")
     
     # UI Settings
     GRADIO_SHARE = False

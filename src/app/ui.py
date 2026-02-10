@@ -4,7 +4,8 @@ import gradio as gr
 from typing import Tuple, List
 
 from .agent import ContextEngineeringAgent
-from config import Settings
+from config.settings import Settings
+from config import logger_ui, logger_app
 
 
 class ContextVisualizerUI:
@@ -13,13 +14,17 @@ class ContextVisualizerUI:
     def __init__(self):
         self.agent = None
         self.chat_history = []
+        logger_ui.info("ContextVisualizerUI initialized")
         
     def initialize_agent(self) -> str:
         """Initialize the agent"""
+        logger_ui.info("Initializing agent from UI")
         try:
             self.agent = ContextEngineeringAgent()
+            logger_ui.info("Agent initialized successfully from UI")
             return "Agent initialized successfully"
         except Exception as e:
+            logger_ui.error(f"Error initializing agent: {str(e)}")
             return f"Error initializing agent: {str(e)}"
     
     def format_context_layers(self, visualizer) -> str:
@@ -28,6 +33,7 @@ class ContextVisualizerUI:
             return "<div style='text-align: center; padding: 20px;'>No context layers available</div>"
         
         total_tokens = sum(visualizer.token_counts.values())
+        logger_ui.debug(f"Formatting context layers: {len(visualizer.context_layers)} layers, {total_tokens} total tokens")
         
         # Color palette for different layers
         colors = [
@@ -118,44 +124,59 @@ class ContextVisualizerUI:
     ) -> Tuple[List, str, str, str]:
         """Process user query and return results"""
         
+        logger_ui.info(f"Processing query from UI: {query[:50]}..." if len(query) > 50 else f"Processing query from UI: {query}")
+        
         if not self.agent:
+            logger_ui.info("Agent not initialized, initializing now")
             self.initialize_agent()
         
         if not query.strip():
+            logger_ui.warning("Empty query received, skipping")
             return history, "", "", ""
         
         try:
+            logger_ui.info("Delegating query processing to agent")
             # Process query
             response, visualizer = self.agent.process_query(query)
             
             # Add to chat history (format: list of dicts with role and content)
             history.append({"role": "user", "content": query})
             history.append({"role": "assistant", "content": response})
+            logger_ui.info(f"Added exchange to chat history. Total messages: {len(history)}")
             
             # Format outputs
             if show_visualization:
+                logger_ui.debug("Formatting context visualization")
                 context_viz_html = self.format_context_layers(visualizer)
                 context_details = self.format_context_details(visualizer)
             else:
+                logger_ui.debug("Visualization disabled by user")
                 context_viz_html = "<div style='text-align: center; padding: 20px; color: #7f8c8d;'>Visualization disabled</div>"
                 context_details = "Visualization disabled"
             
+            logger_ui.info("Query processed successfully")
             return history, "", context_viz_html, context_details
             
         except Exception as e:
             error_msg = f"Error processing query: {str(e)}"
+            logger_ui.error(error_msg)
             history.append({"role": "user", "content": query})
             history.append({"role": "assistant", "content": error_msg})
             return history, "", "", ""
     
     def clear_conversation(self) -> Tuple[List, str, str]:
         """Clear conversation history"""
+        logger_ui.info("Clearing conversation history")
         if self.agent:
+            previous_count = len(self.agent.memory.messages)
             self.agent.memory.messages = []
+            logger_ui.info(f"Cleared {previous_count} messages from conversation memory")
         return [], "", ""
     
     def create_interface(self) -> gr.Blocks:
         """Create the Gradio interface"""
+        
+        logger_ui.info("Creating Gradio interface")
         
         with gr.Blocks(
             title="Context Engineering Visualizer"
@@ -285,6 +306,7 @@ class ContextVisualizerUI:
             **Note**: This visualizer uses OpenAI's GPT model and requires an API key in your environment.
             """)
         
+        logger_ui.info("Gradio interface created successfully")
         return interface
 
 
@@ -294,6 +316,7 @@ def launch_ui(
     server_port: int = Settings.GRADIO_SERVER_PORT
 ):
     """Launch the Gradio interface"""
+    logger_app.info(f"Launching UI with settings: share={share}, server_name={server_name}, server_port={server_port}")
     ui = ContextVisualizerUI()
     interface = ui.create_interface()
     interface.launch(
@@ -302,3 +325,4 @@ def launch_ui(
         server_port=server_port,
         theme=gr.themes.Soft()
     )
+    logger_app.info("UI launched successfully")
