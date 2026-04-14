@@ -1,6 +1,5 @@
 """Context window visualization component"""
 
-from typing import Dict, Any
 from datetime import datetime
 
 
@@ -24,11 +23,3 @@ class ContextVisualizer:
             "timestamp": datetime.now().isoformat()
         })
         self.token_counts[layer_name] = token_estimate
-        
-    def get_summary(self) -> Dict[str, Any]:
-        """Get structured summary of context"""
-        return {
-            "layers": [l["layer"] for l in self.context_layers],
-            "total_tokens": sum(self.token_counts.values()),
-            "breakdown": self.token_counts
-        }

@@ -1,7 +1,7 @@
 """Gradio UI for Context Engineering Visualizer"""
 
 import gradio as gr
-from typing import Tuple, List
+from typing import List, Tuple
 
 from .agent import ContextEngineeringAgent
 from config.settings import Settings
@@ -13,7 +13,6 @@ class ContextVisualizerUI:
     
     def __init__(self):
         self.agent = None
-        self.chat_history = []
         logger_ui.info("ContextVisualizerUI initialized")
         
     def initialize_agent(self) -> str:
@@ -108,13 +107,6 @@ class ContextVisualizerUI:
             output.append("")
         
         return "\n".join(output)
-    
-    def format_token_breakdown(self, visualizer) -> List[Tuple[str, int]]:
-        """Format token breakdown for chart"""
-        if not visualizer.token_counts:
-            return []
-        
-        return [(layer, tokens) for layer, tokens in visualizer.token_counts.items()]
     
     def process_query(
         self, 
